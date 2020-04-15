@@ -62,10 +62,15 @@ def DecoderBlock(num_feats, dropout, batch_norm=False, weight_norm=False):
 
 
 class RUNet(nn.Module):
-  def __init__(self, in_channels, num_feats, dropout=0.25, act_type='prelu', batch_norm=False, weight_norm=False):
+  def __init__(self, in_channels, num_feats, dropout=0.25, act_type='prelu', batch_norm=False, weight_norm=False, mean_shift=False, color_mean=None, color_std=None):
     super(RUNet, self).__init__()
     
+    self.mean_shift = mean_shift
+    
     # mean shift
+    if self.mean_shift:
+      self.sub_mean = MeanShift(color_mean, color_std, -1)
+      self.add_mean = MeanShift([30.9175], [0.6971], 1)
     
     # 40 -> 20
     self.encoder1 = EncoderBlock(in_channels, num_feats, batch_norm=batch_norm, weight_norm=weight_norm)
@@ -89,6 +94,9 @@ class RUNet(nn.Module):
     )
 
   def forward(self, x):
+    if self.mean_shift:
+      x = self.sub_mean(x)
+    
     h1 = self.encoder1(x) # f
     x = self.down1(h1)
     h2 = self.encoder2(x) # 2f
@@ -102,5 +110,8 @@ class RUNet(nn.Module):
     x = self.decoder1(x) + h1 # f
     
     x = self.tail(x)
+    
+    if self.mean_shift:
+      x = self.add_mean(x)
     
     return x
