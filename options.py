@@ -33,6 +33,8 @@ def _load_model(opts) -> nn.Module:
     model = models.UNet1(**opts['kwargs'])
   elif opts['type'] == 'SRFBN':
     model = models.SRFBN(**opts['kwargs'])
+  elif opts['type'] == 'RUNet':
+    model = models.RUNet(**opts['kwargs'])
   else:
     raise NotImplementedError('Unknown network type ' + opts['type'])
   
