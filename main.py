@@ -20,7 +20,7 @@ def train(dataloader, model, criterion, optimizer, desc='') -> float:
   with tqdm(desc=desc, total=len(dataloader), ncols=128) as t:
     for target, data in dataloader:
       target = target.cuda()
-      input = data[:, :10, ...].cuda()
+      input = data[:, :9, ...].cuda()
       
       pred = model(input)
       
@@ -44,7 +44,7 @@ def valid(dataloader, model, criterion, optimizer, desc='') -> float:
   with tqdm(desc=desc, total=len(dataloader), ncols=128) as t:
     for target, data in dataloader:
       target = target.cuda()
-      input = data[:, :10, ...].cuda()
+      input = data[:, :9, ...].cuda()
       
       pred = model(input)
       
@@ -70,7 +70,7 @@ def test(dataloader, model, submit_path, desc=''):
     
     with tqdm(desc=desc, total=len(dataloader), ncols=128) as t:
       for orbit, subset, data in dataloader:
-        input = data[:, :10, ...].cuda()
+        input = data[:, :9, ...].cuda()
         
         preds = model(input) # n x 1 x 40 x 40
         
