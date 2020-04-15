@@ -120,10 +120,13 @@ def main():
   
   # iterate epochs
   if not opts['test_only']:
+    min_loss = 1e9
     for epoch in range(opts['start_epoch'], opts['finish_epoch']+1):
       loss = train(trainloader, model, criterion, optimizer, '[%03d/%03d] train'%(epoch, opts['finish_epoch']))
       loss = valid(validloader, model, criterion, optimizer, '[%03d/%03d] valid'%(epoch, opts['finish_epoch']))
-      save_checkpoint(opts['result_path'], model, optimizer, epoch, loss)
+      if loss < min_loss:
+        min_loss = loss
+        save_checkpoint(opts['result_path'], model, optimizer, epoch, loss)
   
   now = datetime.now().strftime('%y%m%d-%H%M')
   submit_name = 'submit-%s.csv'%(now)
