@@ -1,0 +1,46 @@
+{
+  "result_path": "../../gd/results/rainism/03",
+  "seed": 2020,
+  "save_ckpt_step": 1,
+  "test_only": true,
+  
+  "start_epoch": 1,
+  "finish_epoch": 200,
+
+  "dataset": {
+    "type": "LetsGoHikingDataset",
+    "train_path": "../../datasets/rainism/train",
+    "test_path": "../../datasets/rainism/test",
+    "rate_valid": 0.1,
+    "kwargs": {
+      "shuffle": true,
+      "num_workers": 8,
+      "batch_size": 512
+    }
+  },
+  
+  "network": {
+    "type": "UNet1",
+    "checkpoint_path": "../../gd/results/rainism/03/ckpt-200415-epoch146-loss0.0867-model.pth",
+    "kwargs": {
+      "num_feats": 32,
+      "act_type": "relu",
+      "dropout": 0.25,
+      "batch_norm": true,
+      "mean_shift": true,
+      "color_mean": [197.3028, 139.9293, 217.1051, 169.6790, 239.5916, 233.3362, 192.1457, 264.3871, 245.8586],
+      "color_std": [10.2953, 17.4017, 10.1295, 17.8440, 8.0644, 8.8708, 17.2205, 6.1096, 11.2169]
+    }
+  },
+  
+  "criterion": {
+    "type": "L1"
+  },
+  
+  "optimizer": {
+    "type": "Adam",
+    "checkpoint_path": "../../gd/results/rainism/03/ckpt-200415-epoch146-loss0.0867-optim.pth",
+    "kwargs": {
+    }
+  }
+}
