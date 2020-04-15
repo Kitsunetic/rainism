@@ -20,9 +20,9 @@ def train(dataloader, model, criterion, optimizer, desc='') -> float:
   with tqdm(desc=desc, total=len(dataloader), ncols=128) as t:
     for target, data in dataloader:
       target = target.cuda()
-      temperature = data[:9, ...].cuda()
+      input = data[:, :10, ...].cuda()
       
-      pred = model(temperature)
+      pred = model(input)
       
       optimizer.zero_grad()
       loss = criterion(target, pred)
@@ -44,9 +44,9 @@ def valid(dataloader, model, criterion, optimizer, desc='') -> float:
   with tqdm(desc=desc, total=len(dataloader), ncols=128) as t:
     for target, data in dataloader:
       target = target.cuda()
-      temperature = data[:9, ...].cuda()
+      input = data[:, :10, ...].cuda()
       
-      pred = model(temperature)
+      pred = model(input)
       
       loss = criterion(target, pred)
       
@@ -70,9 +70,9 @@ def test(dataloader, model, submit_path, desc=''):
     
     with tqdm(desc=desc, total=len(dataloader), ncols=128) as t:
       for orbit, subset, data in dataloader:
-        temperature = data[:9, ...].cuda()
+        input = data[:, :10, ...].cuda()
         
-        preds = model(temperature) # n x 1 x 40 x 40
+        preds = model(input) # n x 1 x 40 x 40
         
         batch_size = preds.shape[0]
         for i in range(batch_size):
@@ -126,11 +126,10 @@ def main():
       save_checkpoint(opts['result_path'], model, optimizer, epoch, loss)
   
   now = datetime.now().strftime('%y%m%d-%H%M')
-  if epoch:
-    submit_path = os.path.join(opts['result_path'], 'submit-epoch%03d-%s.csv'%(epoch, now))
-  else:
-    submit_path = os.path.join(opts['result_path'], 'submit-%s.csv'%(now))
+  submit_name = 'submit-%s.csv'%(now)
+  submit_path = os.path.join(opts['result_path'], submit_name)
   test(testloader, model, submit_path, 'Create submit')
+  print('Save submit file', submit_name)
 
 
 if __name__ == "__main__":
