@@ -1,9 +1,24 @@
 import os
 import re
+import random
 
+import cv2
 import numpy as np
 import torch
+from PIL import Image
 from torchvision import transforms
+
+
+def custom_transforms(x):
+  # Random horizontal rotation
+  if random.random() > 0.5:
+    x = cv2.flip(x, 0)
+  
+  # Random vertical rotation
+  if random.random() > 0.5:
+    x = cv2.flip(x, 1)
+  
+  return x
 
 
 class LetsGoHikingDataset(torch.utils.data.Dataset):
@@ -28,24 +43,7 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
       subset = int(groups[1])
       self.data.append((fpath, orbit, subset))
     
-    self.tf = transforms.Compose([
-      transforms.RandomCrop(35),
-      transforms.RandomHorizontalFlip(),
-      transforms.RandomVerticalFlip(),
-      transforms.RandomRotation(15),
-      transforms.ToTensor()
-    ])
-    
-    """
-    self.tf_temperature = transforms.ToTensor()
-    self.tf_surface = transforms.ToTensor()
-    self.tf_gmi_longitude = transforms.ToTensor()
-    self.tf_gmi_latitude = transforms.ToTensor()
-    self.tf_dpr_longitude = transforms.ToTensor()
-    self.tf_dpr_latitude = transforms.ToTensor()
-    if self.is_train:
-      self.tf_target = transforms.ToTensor()
-    """
+    self.tf = transforms.ToTensor()
 
   def __getitem__(self, index):
     fpath, orbit, subset = self.data[index]
@@ -60,37 +58,17 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
      13  | DPR 위도
      14  | 강수량 (mm/h, 결측치는 -9999.xxx 형태의 float 값으로 표기) (TARGET)
     """
-    """
-    temperature = data[..., 0:9].astype(np.float32)
-    surface_type = data[..., 9].astype(np.float32)
-    gmi_longitude = data[..., 10].astype(np.float32)
-    gmi_latitude = data[..., 11].astype(np.float32)
-    dpr_longitude = data[..., 12].astype(np.float32)
-    dpr_latitude = data[..., 13].astype(np.float32)
-    
-    # Transform
-    temperature = self.tf_temperature(temperature)
-    surface_type = self.tf_surface(surface_type)
-    gmi_longitude = self.tf_gmi_longitude(gmi_longitude)
-    gmi_latitude = self.tf_gmi_latitude(gmi_latitude)
-    dpr_longitude = self.tf_dpr_longitude(dpr_longitude)
-    dpr_latitude = self.tf_dpr_latitude(dpr_latitude)
-    
-    if self.is_train:
-      target = self.tf_target(target)
-      target = data[..., 14].astype(np.float32)
-      # Remove NaN
-      target[target <= -9999] = 0
-    
-      return target, temperature, surface_type, gmi_longitude, gmi_latitude, dpr_longitude, dpr_latitude
-    else:
-      return orbit, subset, temperature, surface_type, gmi_longitude, gmi_latitude, dpr_longitude, dpr_latitude
-    """
+    data = custom_transforms(data)
     data = self.tf(data)
     
     if self.is_train:
       target = data[14, ...]
+      target = target.view((1, *target.shape))
       data = data[:13, ...]
+      
+      # Remove NaN
+      target[target <= -9000] = 0
+      
       return target, data
     else:
       return orbit, subset, data
