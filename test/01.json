@@ -1,0 +1,44 @@
+{
+  "result_path": "../../gd/results/rainism/01",
+  "seed": 2020,
+  "save_ckpt_step": 1,
+  "test_only": true,
+  
+  "start_epoch": 1,
+  "finish_epoch": 200,
+
+  "dataset": {
+    "type": "LetsGoHikingDataset",
+    "train_path": "../../datasets/rainism/train",
+    "test_path": "../../datasets/rainism/test",
+    "rate_valid": 0.1,
+    "kwargs": {
+      "shuffle": true,
+      "num_workers": 8,
+      "batch_size": 128
+    }
+  },
+  
+  "network": {
+    "type": "UNet1",
+    "checkpoint_path": "../../gd/results/rainism/01/ckpt-200414-epoch200-loss0.0945-model.pth",
+    "kwargs": {
+      "num_feats": 32,
+      "act_type": "relu",
+      "dropout": 0.25,
+      "batch_norm": true
+    }
+  },
+  
+  "criterion": {
+    "type": "L1"
+  },
+  
+  "optimizer": {
+    "type": "Adam",
+    "checkpoint_path": "../../gd/results/rainism/01/ckpt-200414-epoch200-loss0.0945-optim.pth",
+    "kwargs": {
+      "lr": 1e-4
+    }
+  }
+}
