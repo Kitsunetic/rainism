@@ -31,6 +31,8 @@ def _load_dataset(opts) -> Tuple[DataLoader, DataLoader, DataLoader]:
 def _load_model(opts) -> nn.Module:
   if opts['type'] == 'UNet1':
     model = models.UNet1(**opts['kwargs'])
+  elif opts['type'] == 'SRFBN':
+    model = models.SRFBN(**opts['kwargs'])
   else:
     raise NotImplementedError('Unknown network type ' + opts['type'])
   
