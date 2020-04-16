@@ -72,8 +72,6 @@ class EDRN(nn.Module):
     self.encoder2 = ConvBlock(2*grow_rate, 4*grow_rate, 3, stride=2, conv_type='CBA', act_type='relu', batch_norm=batch_norm, weight_norm=weight_norm)
     self.decoder1 = DeconvBlock(4*grow_rate, 2*grow_rate, 3, padding=1, output_padding=1, stride=2, conv_type='CBA', act_type='relu', batch_norm=batch_norm, weight_norm=weight_norm)
     self.decoder2 = DeconvBlock(2*grow_rate, 1*grow_rate, 3, padding=1, output_padding=1, stride=2, conv_type='CBA', act_type='relu', batch_norm=batch_norm, weight_norm=weight_norm)
-    # Additional deconv for upscale image
-    #self.decoder3 = DeconvBlock(1*grow_rate, 1*grow_rate, 3, padding=1, output_padding=1, stride=2, conv_type='CBA', act_type='relu', batch_norm=batch_norm, weight_norm=weight_norm)
     
     self.RG0 = [RG(4*grow_rate, C, weight_norm=weight_norm) for _ in range(D//1)]
     self.RG0.append(ConvBlock(4*grow_rate, 4*grow_rate, 3, weight_norm=weight_norm))
@@ -85,7 +83,7 @@ class EDRN(nn.Module):
     self.RG1 = nn.Sequential(*self.RG1)
     self.RG2 = nn.Sequential(*self.RG2)
     
-    self.restoration = ConvBlock(grow_rate, 1, 3, weight_norm=weight_norm)
+    self.restoration = ConvBlock(grow_rate, 1, 1, act_type='relu')
 
   def forward(self, x):
     if self.mean_shift:
@@ -100,7 +98,6 @@ class EDRN(nn.Module):
     # add residual
     x = self.decoder1(self.RG0(x) + f3)
     x = self.decoder2(self.RG1(x) + f2)
-    #x = self.decoder3(self.RG2(x) + f1)
     x = self.RG2(x) + f1
     
     x = self.restoration(x)
