@@ -22,11 +22,11 @@ class CALayer(nn.Module):
 
 
 class ResidualBlock(nn.Module):
-  def __init__(self, num_feats, batch_norm=False, weight_norm=False):
+  def __init__(self, num_feats, act_type='relu', batch_norm=False, weight_norm=False):
     super(ResidualBlock, self).__init__()
     self.conv = nn.Sequential(
-      ConvBlock(num_feats, num_feats, 3, act_type='relu', batch_norm=batch_norm, weight_norm=weight_norm),
-      ConvBlock(num_feats, num_feats, 3, act_type='relu', batch_norm=batch_norm, weight_norm=weight_norm),
+      ConvBlock(num_feats, num_feats, 3, act_type=act_type, batch_norm=batch_norm, weight_norm=weight_norm),
+      ConvBlock(num_feats, num_feats, 3, act_type=act_type, batch_norm=batch_norm, weight_norm=weight_norm),
       CALayer(num_feats, weight_norm=weight_norm)
     )
 
@@ -35,7 +35,7 @@ class ResidualBlock(nn.Module):
 
 
 def DownSampleBlock(num_feats, dropout):
-  m = [nn.BatchNorm2d(num_feats), nn.MaxPool2d(2)]
+  m = [nn.BatchNorm2d(num_feats), ConvBlock(num_feats, num_feats, 3, stride=2)]
   
   if dropout > 0:
     m.append(nn.Dropout2d(dropout))
