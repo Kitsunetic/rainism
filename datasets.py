@@ -61,17 +61,23 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
     data = custom_transforms(data)
     data = self.tf(data)
     
+    temperature = data[:9, ...]
+    surface = data[9, ...]
+    surface = surface.view((1, *surface.shape))
+    surface[surface > 20] = 0
+    surface[surface > 10] -= 10
+    out = torch.cat([temperature, surface], dim=0)
+    
     if self.is_train:
       target = data[14, ...]
       target = target.view((1, *target.shape))
-      data = data[:13, ...]
       
       # Remove NaN
       target[target <= -9000] = 0
       
-      return target, data
+      return target, out
     else:
-      return orbit, subset, data
+      return orbit, subset, out
 
   def __len__(self):
     return len(self.data)
