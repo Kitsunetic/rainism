@@ -24,7 +24,10 @@ def _load_dataset(opts) -> Tuple[DataLoader, DataLoader, DataLoader]:
   
   trainloader = DataLoader(trainset, **opts['kwargs'])
   validloader = DataLoader(validset, **opts['kwargs'])
-  testloader = DataLoader(testset, **opts['kwargs'])
+  
+  test_opts = opts['kwargs']
+  test_opts['batch_size'] = 128
+  testloader = DataLoader(testset, **test_opts)
   
   return trainloader, validloader, testloader
 
