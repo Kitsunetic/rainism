@@ -70,7 +70,7 @@ class RUNet(nn.Module):
     # mean shift
     if self.mean_shift:
       self.sub_mean = MeanShift(color_mean, color_std, -1)
-      self.add_mean = MeanShift([0.1457], [0.6971], 1)
+      self.add_mean = MeanShift([0.1457], [1.], 1)
     
     # 40 -> 20
     self.encoder1 = EncoderBlock(in_channels, num_feats, batch_norm=batch_norm, weight_norm=weight_norm)
