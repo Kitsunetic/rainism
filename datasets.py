@@ -63,12 +63,6 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
     
     temperature = data[:9, ...]
     """
-    means = [197.3028, 139.9293, 217.1051, 169.6790, 239.5916, 233.3362, 192.1457, 264.3871, 245.8586]
-    stds = [10.2953, 17.4017, 10.1295, 17.8440, 8.0644, 8.8708, 17.2205, 6.1096, 11.2169]
-    for i in range(9):
-      temperature[i, ...] = (temperature[i, ...] - means[i]) / stds[i]
-    """
-    
     surface = data[9, ...]
     surface[surface > 100] = 0.8
     surface[surface != 0.8] = 1
@@ -77,8 +71,7 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
     for i in range(9):
       temperature[i, ...] *= surface
       temperature[i, ...] /= means[i]*0.8
-    
-    #out = torch.cat([temperature, surface], dim=0)
+    """
     out = temperature
     
     if self.is_train:

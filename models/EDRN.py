@@ -57,14 +57,15 @@ class RG(nn.Module):
 
 
 class EDRN(nn.Module):
-  def __init__(self, in_channels, out_channels, grow_rate, scale, mean_shift=True, rgb_mean=(0.4313, 0.4162, 0.3861), rgb_std=(1.0, 1.0, 1.0), batch_norm=False, weight_norm=False):
+  def __init__(self, in_channels, grow_rate, batch_norm=False, weight_norm=False, mean_shift=False, color_mean=None, color_std=None):
     super(EDRN, self).__init__()
     
     D, C, G = 4, 10, 16
+    self.mean_shift = mean_shift
     
-    if mean_shift:
-      self.sub_mean = MeanShift(rgb_mean, rgb_std, -1)
-      self.add_mean = MeanShift(rgb_mean, rgb_std, 1)
+    if self.mean_shift:
+      self.sub_mean = MeanShift(color_mean, color_std, -1)
+      self.add_mean = MeanShift(color_mean, color_std, 1)
     
     self.SFENet = ConvBlock(in_channels, grow_rate, 3, weight_norm=weight_norm)
     self.encoder1 = ConvBlock(1*grow_rate, 2*grow_rate, 3, stride=2, conv_type='CBA', act_type='relu', batch_norm=batch_norm, weight_norm=weight_norm)
@@ -84,10 +85,11 @@ class EDRN(nn.Module):
     self.RG1 = nn.Sequential(*self.RG1)
     self.RG2 = nn.Sequential(*self.RG2)
     
-    self.restoration = ConvBlock(grow_rate, out_channels, 3, weight_norm=weight_norm)
+    self.restoration = ConvBlock(grow_rate, 1, 3, weight_norm=weight_norm)
 
   def forward(self, x):
-    x = self.sub_mean(x)
+    if self.mean_shift:
+      x = self.sub_mean(x)
     
     # encoders
     f1 = self.SFENet(x)
@@ -102,6 +104,8 @@ class EDRN(nn.Module):
     x = self.RG2(x) + f1
     
     x = self.restoration(x)
-    x = self.add_mean(x)
+    
+    if self.mean_shift:
+      x = self.add_mean(x)
     
     return x
