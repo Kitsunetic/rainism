@@ -94,16 +94,22 @@ def save_checkpoint(dirroot_ckpt, model, optimizer, epoch, loss):
   now = datetime.now().strftime('%y%m%d')
   
   model_name = 'ckpt-%s-epoch%d-loss%.4f-model.pth'%(now, epoch, loss)
-  model_path = os.path.join(dirroot_ckpt, model_name)
-  print('Save model', model_name)
-  with open(model_path, 'wb') as f:
-    torch.save(model.module.state_dict(), f)
-  
   optim_name = 'ckpt-%s-epoch%d-loss%.4f-optim.pth'%(now, epoch, loss)
-  optim_path = os.path.join(dirroot_ckpt, optim_name)
-  print('Save optimizer', optim_name)
-  with open(optim_path, 'wb') as f:
-    torch.save(optimizer.state_dict(), f)
+  if model and optimizer:
+    print('Save model and optimizer', model_name, optim_name)
+  elif model:
+    print('Save model', model_name)
+  else:
+    print('Save optimizer', optim_name)
+  
+  if model:
+    model_path = os.path.join(dirroot_ckpt, model_name)
+    with open(model_path, 'wb') as f:
+      torch.save(model.module.state_dict(), f)
+  if optimizer:
+    optim_path = os.path.join(dirroot_ckpt, optim_name)
+    with open(optim_path, 'wb') as f:
+      torch.save(optimizer.state_dict(), f)
 
 
 def main():
