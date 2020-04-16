@@ -53,7 +53,7 @@ def valid(dataloader, model, criterion, optimizer, desc='') -> float:
       # update tqdm
       loss_list.append(loss.item())
       mean_loss = sum(loss_list) / len(loss_list)
-      t.set_postfix_str('loss %.4f'%mean_loss)
+      t.set_postfix_str('vloss %.4f'%mean_loss)
       t.update()
   
   return mean_loss
