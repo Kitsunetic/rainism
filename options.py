@@ -38,6 +38,8 @@ def _load_model(opts) -> nn.Module:
     model = models.SRFBN(**opts['kwargs'])
   elif opts['type'] == 'RUNet':
     model = models.RUNet(**opts['kwargs'])
+  elif opts['type'] == 'RUNet2':
+    model = models.RUNet2(**opts['kwargs'])
   elif opts['type'] == 'EDRN':
     model = models.EDRN(**opts['kwargs'])
   else:
