@@ -62,20 +62,30 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
     data = self.tf(data)
     
     temperature = data[:9, ...]
-    """
-    surface = data[9, ...]
-    surface[surface > 100] = 0.8
-    surface[surface != 0.8] = 1
+    temperature = (temperature - 273) / 100 # 'C
     
+    surface = data[9, ...]
+    surface = surface.view((1, *surface.shape))
+    surface[surface > 300] -= 300
+    surface[surface > 200] -= 200
+    surface[surface > 100] -= 100
+    surface /= 100
+    
+    #position = data[10:14, ...]
+    #position /= 100
+    
+    """
     means = [197.3028, 139.9293, 217.1051, 169.6790, 239.5916, 233.3362, 192.1457, 264.3871, 245.8586]
     for i in range(9):
       temperature[i, ...] *= surface
       temperature[i, ...] /= means[i]*0.8
     """
     out = temperature
+    #out = torch.cat([temperature, surface, position], dim=0)
+    #out = torch.cat([temperature, surface], dim=0)
     
     if self.is_train:
-      target = data[14, ...]
+      target = data[14, ...] / 100
       target = target.view((1, *target.shape))
       
       # Remove NaN
