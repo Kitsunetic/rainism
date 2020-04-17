@@ -7,6 +7,7 @@ import numpy as np
 import torch
 from PIL import Image
 from torchvision import transforms
+from xqdm import xqdm
 
 
 def custom_transforms(x):
@@ -32,7 +33,7 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
     files = list(files)
     
     # Get orbit and subset number
-    self.data = []
+    filelist = []
     for fname in files:
       fpath = os.path.join(dataset_path, fname)
       groups = re.search('subset_(\\d+)_(\\d+)\\.npy', fname).groups()
@@ -41,10 +42,28 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
       
       orbit = int(groups[0])
       subset = int(groups[1])
-      self.data.append((fpath, orbit, subset))
+      filelist.append((fpath, orbit, subset))
+      
+    # filtering
+    if is_train:
+      filelist = xqdm(self._data_filter, filelist, ncols=128, desc='Data filtering')
+      self.data = list(filter(None, filelist))
+    else:
+      self.data = filelist
+    #self.data = filelist
     
     self.tf = transforms.ToTensor()
+  
+  
+  def _data_filter(self, args):
+    fpath = args[0]
+    
+    data = np.load(fpath)
+    target = data[..., 14]
+    if np.sum(target, axis=(0, 1)) > 0.1:
+      return args
 
+  
   def __getitem__(self, index):
     fpath, orbit, subset = self.data[index]
     data = np.load(fpath).astype(np.float32)
@@ -62,36 +81,23 @@ class LetsGoHikingDataset(torch.utils.data.Dataset):
     data = self.tf(data)
     
     temperature = data[:9, ...]
-    temperature = (temperature - 273) / 100 # 'C
+    temperature = (temperature - 273)
     
     surface = data[9, ...]
     surface = surface.view((1, *surface.shape))
     surface[surface > 300] -= 300
     surface[surface > 200] -= 200
     surface[surface > 100] -= 100
-    surface /= 100
-    
-    #position = data[10:14, ...]
-    #position /= 100
-    
-    """
-    means = [197.3028, 139.9293, 217.1051, 169.6790, 239.5916, 233.3362, 192.1457, 264.3871, 245.8586]
-    for i in range(9):
-      temperature[i, ...] *= surface
-      temperature[i, ...] /= means[i]*0.8
-    """
-    out = temperature
-    #out = torch.cat([temperature, surface, position], dim=0)
-    #out = torch.cat([temperature, surface], dim=0)
+
+    #out = temperature
+    out = torch.cat([temperature, surface], dim=0)
     
     if self.is_train:
-      target = data[14, ...] / 100
+      target = data[14, ...]
       target = target.view((1, *target.shape))
       
       # Remove NaN
       target[target <= -9000] = 0
-      
-      #target = (target - 0.1457) / 0.6971
       
       return target, out
     else:
